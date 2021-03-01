@@ -1,0 +1,243 @@
+#include <stdio.h>
+#include <stdlib.h> /* funções gerais, limpeza da tela, alocação dinâmica, srand()  rand() */
+#include <time.h>
+#include "rlutil.h"
+#include <windows.h>
+#define FACIL 4
+#define NORMAL 6
+#define DIFICIL 8
+
+
+/**************************** prototipo de funções **********************/
+
+int dificuldade(void);
+int *criaTabuleiro(int lin, int col);
+int *criaTabuleiroZerado (int lin, int col);
+int *preencheTabuleiroAleatoriamente(int lin, int col);
+void imprimeMatriz(int * matriz, int lin, int col);
+int jogar(int liin, int col);
+void menu(void);
+void regras(void);
+
+
+
+
+/**************************** main ************************************************/
+int main(void){
+    setColor(15);
+    saveDefaultColor();
+	srand(time(NULL));
+    menu();
+    return 0;
+    }
+
+/******************************funçoes*********************************************/
+int dificuldade(void){
+    int nivel;
+     printf("\nPor favor, digite em que dificuldade deseja jogar:\n");
+    setColor(5);
+    printf("1. Facil\n");
+    setColor(10);
+    printf("2. Normal\n");
+    setColor(12);
+    printf("3. Dificil\n");
+    resetColor();
+    printf("Selecione a dificuldade: ");
+    scanf("%d",&nivel);
+    while (nivel < 0 || nivel > 3){
+        printf("Selecione uma dificuldade valida: ");
+        scanf("%d",&nivel);}
+
+    if (nivel == 1){
+        setColor(5);
+        printf("Voce selecionou a dificuldade: Facil.\n");
+    }
+    else if (nivel == 2){
+        setColor(10);
+        printf("Voce selecionou a dificuldade: Normal.\n");
+
+    }
+    else{
+        setColor(12);
+        printf("Voce selecionou a dificuldade: Dificil.\n");
+        printf("Boa sorte...\n");
+        }
+    Sleep(2000);
+    system("cls");
+    return nivel;
+}
+
+int * criaTabuleiro(int lin, int col){
+	int *tabuleiro; /*Cria o tabuleiro */
+	tabuleiro = (int *)malloc(lin*col*sizeof(int));  /*Aloca espaço para um ponteiro de tamanho lin*col*/
+	return tabuleiro;
+}
+
+/*Tabuleiro zerado com os resultados escondidos*/
+int * criaTabuleiroZerado (int lin, int col){
+	int *tabuleiro; /*cria tabuleiro*/
+	int i, j;
+	tabuleiro = criaTabuleiro(lin, col); /*chama funçao que aloca espaço na memoria para a matriz criada*/
+	for (i=0; i<lin; i++){ /*preenche o tabuleiro com os zeros*/
+		for (j=0; j<col; j++){
+			tabuleiro[i * col + j] = 0;
+		}
+	}
+    return tabuleiro;
+}
+
+/*Funçao para preencher aleatoriamente o tabuleiro*/
+int * preencheTabuleiroAleatoriamente(int lin, int col){
+	int pos1,pos2,numero=1;
+	int * tabuleiro; /*Cria um tabuleiro com as peças reais*/
+	/*chama funçao que aloca espaço na mem�ria para a matriz criada, zerando para depois preencher*/
+	tabuleiro = criaTabuleiroZerado(lin,col);
+
+	/*Considerando que linha e coluna sejam iguais
+	Adiciona os numeros de 1 a metade
+	lin e col =4, vai entrar numero de 1 a 8, e pegar um random %4*/
+
+	while(numero<=(lin*col)/2){
+		pos1=rand()%(lin*col);
+		pos2=rand()%(lin*col);
+
+
+	if (*(tabuleiro+ pos1) ==0 && *(tabuleiro+ pos2) == 0){
+        if (pos1 != pos2){
+            *(tabuleiro+ pos1) = numero;
+            *(tabuleiro+ pos2) = numero;
+            numero++;
+      	}
+
+    	}
+	}
+	return tabuleiro;
+}
+
+/*Imprime matriz que eu ja tinha*/
+void imprimeMatriz(int * matriz, int lin, int col){
+	int i, j;
+	puts("");
+	for (i=0; i<lin; i++){ /*Loop para percorrer a matriz*/
+		for (j=0; j<col; j++){
+            setColor(13);
+			printf("%d ", *(matriz+i*col+j)); /*Printa linha por linha*/
+		}
+		puts("");
+	}
+}
+
+
+int jogar(int lin, int col){
+
+	int *tabuleiroReal;
+	int *tabuleiroJogador;
+
+	/*Cria um tabuleiro preenchido e um tabuleiro zerado*/
+	tabuleiroReal = preencheTabuleiroAleatoriamente(lin,col);
+	tabuleiroJogador = criaTabuleiroZerado(lin,col);
+
+	/*Conta quantidade de peças viradas acertadas, tabuleiro de 16 pecas tem 8 acertos*/
+	int acertos=0;
+	int tentativas=0;
+	imprimeMatriz(tabuleiroReal,lin,col);
+    Sleep(10000);
+    system("cls");
+	while (acertos<(lin*col)/2){
+		imprimeMatriz(tabuleiroJogador,lin,col);
+		int peca1; int peca2;
+		setColor(14);
+		puts("Digite o numero (Lido da esquerda para a direita) das duas pecas que deseja mudar\n");
+		scanf("%d %d", &peca1, &peca2);
+		if(peca1 == peca2){
+            setColor(13);
+			printf("\nPeca pedida invalida, peca uma peca de 1 ate %d \n", lin*col);
+            resetColor();
+			continue;
+		}
+		if(peca1>lin*col || peca2>lin*col || peca1<1 ||peca2<1){
+            setColor(13);
+			printf("\nPeca pedida invalida, peca uma peca de 1 ate %d \n", lin*col);
+            resetColor();
+			continue;
+		}
+		peca1-=1; peca2-=1;
+		/*Verifica caso o jogador tenha passado peças que já não foram viradas*/
+		if(*(tabuleiroJogador+peca1)!=0 || *(tabuleiroJogador+peca2)!=0 ){
+            setColor(13);
+			puts("\nDigite pecas que ja nao tenham sido viradas.\n");
+			resetColor();
+			continue;
+		}
+		*(tabuleiroJogador+peca1)=*(tabuleiroReal+peca1);
+		*(tabuleiroJogador+peca2)=*(tabuleiroReal+peca2);
+		imprimeMatriz(tabuleiroJogador,lin,col);
+		if(*(tabuleiroJogador+peca1)==*(tabuleiroJogador+peca2)){
+			acertos+=1;
+            setColor(9);
+			puts("\nParabéns, acertou!\n");
+			resetColor();
+		}else{
+		    setColor(12);
+			puts("\nErrou, continue tentando.\n");
+			resetColor();
+			*(tabuleiroJogador+peca1)=0;
+			*(tabuleiroJogador+peca2)=0;
+		}
+		tentativas++;
+	}
+    setColor(11);
+	printf("\nVoce conseguiu em %d tentativas!", tentativas);
+	resetColor();
+
+    return 0;
+}
+
+
+
+void menu(void){
+    char opcao;
+    int nivel;
+    setColor(14);
+    printf("\t\t\t\t****** BEM-VINDO AO JOGO DA MEMORIA ******\n\n");
+    resetColor();
+    printf("1. Jogar\n");
+    printf("2. Regras\n");
+    printf("3. Sair\n");
+    printf("Digite a sua escolha: ");
+
+    opcao = getchar(); /* Pega a opcao */
+    switch(opcao){
+        case '1':
+            nivel = dificuldade();
+            if(nivel == 1){
+                jogar(FACIL,FACIL);
+            }else if(nivel == 2){
+                jogar(NORMAL,NORMAL);
+            }else{
+                jogar(DIFICIL,DIFICIL);
+            }
+            break;
+
+        case '2':
+            system("cls");
+            regras();
+            Sleep(10000);
+            system("cls");
+            menu();
+            break;
+
+        case '3':
+            exit(0);;
+
+        default:
+            system("cls");
+            printf("Por favor, selecione uma opcao valida\n\n");
+            menu();
+
+        }
+    }
+void regras(void){
+    printf("Ola, seja bem-vindo ao jogo da memoria.\n\nO objetivo desse jogo e acertar todos os pares dentro da matriz.\n\nO tamanho da matriz dependera da dificuldade escolhida.\n");
+    printf("Considere o exemplo da dificuldade facil: \n\n0 0 0 0\n\nPara escolher o par basta contar da esquerda para a direita, por exemplo digitando: 1 2, temos:\n\nx x 0 0\n\nE assim sucessivamente!");
+    }
