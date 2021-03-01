@@ -1,3 +1,8 @@
+/* Jogo da memoria feito por:
+Felipe teixeira
+Larissa Cabral
+Gulherme Pacifico */
+
 #include <stdio.h>
 #include <stdlib.h> /* funções gerais, limpeza da tela, alocação dinâmica, srand()  rand() */
 #include <time.h>
